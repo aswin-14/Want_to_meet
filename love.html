@@ -11,14 +11,36 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(45deg, #ff4d6d, #ff99c8);
+
+            /* 🌹 Local background image */
+            background-image: url("ed-robertson-UrF1Jf5PamQ-unsplash.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+
             font-family: Arial, sans-serif;
             color: white;
             text-align: center;
         }
 
+        /* Dark overlay for readability */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
         .container {
             text-align: center;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
         }
 
         img {
@@ -33,18 +55,20 @@
 
         h1 {
             font-size: 60px;
+            margin: 10px 0;
         }
 
         p {
             font-size: 28px;
+            margin: 0;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- 🔽 Change image name here -->
-    <img src="8314569.jpg" alt="My Photo ❤️">
+    <!-- ❤️ Local image -->
+    <img src="8314569.jpg" alt="My Love ❤️">
 
     <h1>❤️ I Love You ❤️</h1>
     <p>Forever and always 💕</p>

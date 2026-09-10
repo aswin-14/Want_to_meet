@@ -1,35 +1,156 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Timesheets Demo</title></head>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CORS Test — /api/timesheets/</title>
+<style>
+  body { font-family: ui-monospace, monospace; margin: 2rem; background: #0d1117; color: #c9d1d9; }
+  h1 { font-size: 1.2rem; color: #58a6ff; }
+  button { padding: .5rem 1rem; font-size: 1rem; cursor: pointer; background: #238636; color: #fff; border: 0; border-radius: 6px; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow: auto; max-height: 60vh; white-space: pre-wrap; word-break: break-all; }
+  .ok    { color: #3fb950; }
+  .err   { color: #f85149; }
+  .warn  { color: #d29922; }
+  .info  { color: #58a6ff; }
+  #status { margin: .75rem 0; font-weight: bold; }
+  label { display: block; margin: .5rem 0 .25rem; color: #8b949e; }
+  input { width: 100%; max-width: 700px; padding: .4rem; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; }
+</style>
+</head>
 <body>
-  <button id="loadBtn">GET /api/timesheets/</button>
-  <pre id="out"></pre>
 
-  <script>
-    document.getElementById('loadBtn').addEventListener('click', async () => {
-      const out = document.getElementById('out');
-      out.textContent = 'sending...';
-      try {
-        const res = await fetch('https://techbench.in/api/timesheets/', {
-          method: 'GET',
-          // 'include' asks the browser to attach cookies cross-origin.
-          // BUT: the auth cookies are SameSite=Lax, so the browser will
-          // silently drop them on this cross-site fetch. Nothing you can
-          // do from JS changes that.
-          credentials: 'include',
-          headers: {
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-          }
-        });
+<h1>CORS Test Harness — GET /api/timesheets/</h1>
 
-        const text = await res.text();
-        let data; try { data = JSON.parse(text); } catch { data = text; }
-        out.textContent = `status: ${res.status}\n\n` +
-          (typeof data === 'string' ? data : JSON.stringify(data, null, 2));
-      } catch (err) {
-        out.textContent = 'error: ' + err.message;
-      }
+<label>Endpoint URL</label>
+<input id="url" value="https://techbench.in/api/timesheets/" />
+
+<label>Authorization header value (sent as-is; leave blank to rely on cookies only)</label>
+<input id="auth" value="Bearer " />
+
+<label>Credentials mode</label>
+<select id="creds" style="padding:.4rem;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;">
+  <option value="include" selected>include (send cookies)</option>
+  <option value="same-origin">same-origin</option>
+  <option value="omit">omit</option>
+</select>
+
+<p><button id="go">Run CORS Test</button></p>
+<div id="status">Idle.</div>
+<pre id="out">// Output will appear here.</pre>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const out = $('out');
+const statusEl = $('status');
+
+function log(msg, cls = '') {
+  const line = cls ? `<span class="${cls}">${msg}</span>` : msg;
+  out.innerHTML += line + "\n";
+  out.scrollTop = out.scrollHeight;
+}
+
+function clear() { out.textContent = ''; }
+
+async function runTest() {
+  clear();
+  $('go').disabled = true;
+  statusEl.textContent = 'Running…';
+  statusEl.className = 'warn';
+
+  const url    = $('url').value.trim();
+  const auth   = $('auth').value;          // sent verbatim
+  const creds  = $('creds').value;
+
+  log(`# Page origin : ${location.origin}`, 'info');
+  log(`# Target URL  : ${url}`, 'info');
+  log(`# Credentials : ${creds}`, 'info');
+  log(`# Auth header : ${auth ? auth : '(none)'}`, 'info');
+  log('');
+
+  const headers = {
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9'
+  };
+  // Only attach Authorization if non-empty after trimming the scheme,
+  // to avoid sending "Bearer " with no token.
+  if (auth && auth.trim() !== 'Bearer' && auth.trim() !== 'Bearer ') {
+    headers['Authorization'] = auth;
+  } else {
+    log('! Authorization header omitted (no token supplied).', 'warn');
+  }
+
+  log('# Sending fetch()…', 'info');
+  const t0 = performance.now();
+
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: creds,
+      headers,
+      redirect: 'follow',
+      cache: 'no-store'
     });
-  </script>
+
+    const t1 = performance.now();
+    log(`\n# Response received in ${(t1 - t0).toFixed(1)} ms`, 'info');
+    log(`HTTP ${res.status} ${res.statusText}`, res.ok ? 'ok' : 'err');
+    log(`type=${res.type}  redirected=${res.redirected}  url=${res.url}`, 'info');
+    log('');
+
+    log('# Response headers:', 'info');
+    for (const [k, v] of res.headers.entries()) {
+      log(`  ${k}: ${v}`);
+    }
+
+    // Highlight CORS-relevant headers
+    log('');
+    const cors = ['access-control-allow-origin','access-control-allow-credentials',
+                  'access-control-expose-headers','access-control-allow-methods',
+                  'access-control-allow-headers','vary'];
+    log('# CORS-relevant headers:', 'info');
+    for (const c of cors) {
+      const v = res.headers.get(c);
+      log(`  ${c}: ${v !== null ? v : '(absent)'}`, v !== null ? 'ok' : 'warn');
+    }
+
+    log('');
+    log('# Body:', 'info');
+    const text = await res.text();
+    try {
+      const json = JSON.parse(text);
+      log(JSON.stringify(json, null, 2));
+    } catch {
+      log(text || '(empty body)');
+    }
+
+    statusEl.textContent = res.ok ? `Success — HTTP ${res.status}` : `Failed — HTTP ${res.status}`;
+    statusEl.className = res.ok ? 'ok' : 'err';
+
+  } catch (err) {
+    const t1 = performance.now();
+    log(`\n# Fetch threw after ${(t1 - t0).toFixed(1)} ms`, 'err');
+    log(`Name   : ${err.name}`, 'err');
+    log(`Message: ${err.message}`, 'err');
+    log('');
+    if (err instanceof TypeError) {
+      log('This is almost certainly a CORS / network failure. Common causes:', 'warn');
+      log('  • No Access-Control-Allow-Origin matching this page origin.', 'warn');
+      log('  • Allow-Origin is "*" but credentials:"include" was used.', 'warn');
+      log('  • Authorization not listed in Access-Control-Allow-Headers.', 'warn');
+      log('  • Preflight (OPTIONS) returned non-2xx.', 'warn');
+      log('  • Mixed content (page https, API http) or DNS/TLS failure.', 'warn');
+      log('Open DevTools → Network → the OPTIONS request to inspect the preflight.', 'warn');
+    }
+    statusEl.textContent = 'Error — see output';
+    statusEl.className = 'err';
+  } finally {
+    $('go').disabled = false;
+  }
+}
+
+$('go').addEventListener('click', runTest);
+</script>
 </body>
 </html>

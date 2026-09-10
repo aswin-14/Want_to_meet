@@ -12,21 +12,25 @@
       const out = document.getElementById('out');
       out.textContent = 'sending...';
       try {
-        const res = await fetch('https://techbench.in/apigateway/login/', {  // <-- 1. URL
+        const res = await fetch('https://techbench.in/apigateway/login/', {
           method: 'POST',
+          // Use a "simple" content type to avoid triggering CORS preflight (OPTIONS).
+          // 'text/plain' is on the CORS-safelisted list, so the browser sends POST directly.
+          // Server still receives a JSON string in the body.
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'text/plain;charset=UTF-8',
             'Accept': 'application/json'
-            // 'Authorization': 'Bearer <token>'   // <-- only if needed
           },
-          credentials: 'same-origin',   // <-- 3. 'include' for cross-origin cookies
-          body: JSON.stringify({         // <-- 2. body
+          credentials: 'include',   // send cookies cross-origin
+          body: JSON.stringify({
             email: document.getElementById('email').value,
             password: document.getElementById('password').value
           })
         });
-        const data = await res.json();
-        out.textContent = `status: ${res.status}\n\n` + JSON.stringify(data, null, 2);
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch { data = text; }
+        out.textContent = `status: ${res.status}\n\n` + (typeof data === 'string' ? data : JSON.stringify(data, null, 2));
       } catch (err) {
         out.textContent = 'error: ' + err.message;
       }

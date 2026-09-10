@@ -1,156 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>CORS Test — /api/timesheets/</title>
-<style>
-  body { font-family: ui-monospace, monospace; margin: 2rem; background: #0d1117; color: #c9d1d9; }
-  h1 { font-size: 1.2rem; color: #58a6ff; }
-  button { padding: .5rem 1rem; font-size: 1rem; cursor: pointer; background: #238636; color: #fff; border: 0; border-radius: 6px; }
-  button:disabled { opacity: .5; cursor: not-allowed; }
-  pre { background: #161b22; padding: 1rem; border-radius: 6px; overflow: auto; max-height: 60vh; white-space: pre-wrap; word-break: break-all; }
-  .ok    { color: #3fb950; }
-  .err   { color: #f85149; }
-  .warn  { color: #d29922; }
-  .info  { color: #58a6ff; }
-  #status { margin: .75rem 0; font-weight: bold; }
-  label { display: block; margin: .5rem 0 .25rem; color: #8b949e; }
-  input { width: 100%; max-width: 700px; padding: .4rem; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; }
-</style>
-</head>
+<html>
+<head><meta charset="utf-8"><title>Timesheets Attempt</title></head>
 <body>
+  <h3>Attempt: get /api/timesheets/ from aswin-14.github.io with techbench.in cookies</h3>
+  <button id="try1">1. fetch with credentials:'include'</button>
+  <button id="try2">2. try to set Cookie header manually</button>
+  <button id="try3">3. copy cookies via document.cookie</button>
+  <button id="try4">4. fetch with Authorization Bearer (manual token)</button>
+  <button id="try5">5. iframe the endpoint</button>
+  <pre id="out" style="white-space:pre-wrap; font-size:13px;"></pre>
 
-<h1>CORS Test Harness — GET /api/timesheets/</h1>
+  <script>
+    const out = document.getElementById('out');
+    const URL = 'https://techbench.in/api/timesheets/';
+    const log = (s) => { out.textContent += s + '\n\n'; };
+    const clear = () => { out.textContent = ''; };
 
-<label>Endpoint URL</label>
-<input id="url" value="https://techbench.in/api/timesheets/" />
-
-<label>Authorization header value (sent as-is; leave blank to rely on cookies only)</label>
-<input id="auth" value="Bearer " />
-
-<label>Credentials mode</label>
-<select id="creds" style="padding:.4rem;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;">
-  <option value="include" selected>include (send cookies)</option>
-  <option value="same-origin">same-origin</option>
-  <option value="omit">omit</option>
-</select>
-
-<p><button id="go">Run CORS Test</button></p>
-<div id="status">Idle.</div>
-<pre id="out">// Output will appear here.</pre>
-
-<script>
-const $ = (id) => document.getElementById(id);
-const out = $('out');
-const statusEl = $('status');
-
-function log(msg, cls = '') {
-  const line = cls ? `<span class="${cls}">${msg}</span>` : msg;
-  out.innerHTML += line + "\n";
-  out.scrollTop = out.scrollHeight;
-}
-
-function clear() { out.textContent = ''; }
-
-async function runTest() {
-  clear();
-  $('go').disabled = true;
-  statusEl.textContent = 'Running…';
-  statusEl.className = 'warn';
-
-  const url    = $('url').value.trim();
-  const auth   = $('auth').value;          // sent verbatim
-  const creds  = $('creds').value;
-
-  log(`# Page origin : ${location.origin}`, 'info');
-  log(`# Target URL  : ${url}`, 'info');
-  log(`# Credentials : ${creds}`, 'info');
-  log(`# Auth header : ${auth ? auth : '(none)'}`, 'info');
-  log('');
-
-  const headers = {
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'en-US,en;q=0.9'
-  };
-  // Only attach Authorization if non-empty after trimming the scheme,
-  // to avoid sending "Bearer " with no token.
-  if (auth && auth.trim() !== 'Bearer' && auth.trim() !== 'Bearer ') {
-    headers['Authorization'] = auth;
-  } else {
-    log('! Authorization header omitted (no token supplied).', 'warn');
-  }
-
-  log('# Sending fetch()…', 'info');
-  const t0 = performance.now();
-
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      mode: 'cors',
-      credentials: creds,
-      headers,
-      redirect: 'follow',
-      cache: 'no-store'
+    // -------- Attempt 1: the standard, correct attempt --------
+    document.getElementById('try1').addEventListener('click', async () => {
+      clear();
+      log('--- Attempt 1: fetch with credentials:"include" ---');
+      try {
+        const res = await fetch(URL, {
+          method: 'GET',
+          credentials: 'include',  // ask browser to attach cookies
+          headers: { 'Accept': 'application/json' }
+        });
+        log('status: ' + res.status);
+        log(await res.text());
+      } catch (err) {
+        log('ERROR: ' + err.message);
+        log('(This is the expected outcome — CORS blocked the read, ' +
+            'and/or no cookies were attached.)');
+      }
+      log('→ Open DevTools > Network > the request. Check:\n' +
+          '  - Is there a "Cookie:" header? (Almost certainly: no.)\n' +
+          '  - Is there "Access-Control-Allow-Origin" in the response? (No.)');
     });
 
-    const t1 = performance.now();
-    log(`\n# Response received in ${(t1 - t0).toFixed(1)} ms`, 'info');
-    log(`HTTP ${res.status} ${res.statusText}`, res.ok ? 'ok' : 'err');
-    log(`type=${res.type}  redirected=${res.redirected}  url=${res.url}`, 'info');
-    log('');
+    // -------- Attempt 2: try to forge the Cookie header --------
+    document.getElementById('try2').addEventListener('click', async () => {
+      clear();
+      log('--- Attempt 2: set Cookie header manually ---');
+      try {
+        const res = await fetch(URL, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            // Try to forge the cookie. This is a forbidden header name.
+            'Cookie': 'access_token=FAKE; role=superadmin; sub_role=admin'
+          }
+        });
+        log('status: ' + res.status);
+        log(await res.text());
+      } catch (err) {
+        log('ERROR: ' + err.message);
+      }
+      log('→ DevTools > Network > Request Headers. ' +
+          'You will NOT see "Cookie:". The browser deleted it ' +
+          'before sending. This is enforced by the Fetch spec.');
+    });
 
-    log('# Response headers:', 'info');
-    for (const [k, v] of res.headers.entries()) {
-      log(`  ${k}: ${v}`);
-    }
+    // -------- Attempt 3: read techbench.in's cookies via document.cookie --------
+    document.getElementById('try3').addEventListener('click', () => {
+      clear();
+      log('--- Attempt 3: read techbench.in cookies from this origin ---');
+      log('document.cookie on aswin-14.github.io returns:');
+      log('  "' + (document.cookie || '(empty)') + '"');
+      log('→ Any cookies you see here belong to aswin-14.github.io.');
+      log('  The techbench.in cookies (access_token, cf_clearance, ' +
+          'device_id, role) are NOT visible — they are scoped to a ' +
+          'different domain, and access_token/device_id are HttpOnly ' +
+          'on top of that.');
+      log('  You cannot read another domain\'s cookies. Period.');
+    });
 
-    // Highlight CORS-relevant headers
-    log('');
-    const cors = ['access-control-allow-origin','access-control-allow-credentials',
-                  'access-control-expose-headers','access-control-allow-methods',
-                  'access-control-allow-headers','vary'];
-    log('# CORS-relevant headers:', 'info');
-    for (const c of cors) {
-      const v = res.headers.get(c);
-      log(`  ${c}: ${v !== null ? v : '(absent)'}`, v !== null ? 'ok' : 'warn');
-    }
+    // -------- Attempt 4: manually supply a bearer token --------
+    document.getElementById('try4').addEventListener('click', async () => {
+      clear();
+      log('--- Attempt 4: Authorization: Bearer <token> ---');
+      log('Enter a token value below (or paste the one from a login response):');
+      const token = prompt('Paste JWT access token (or blank):');
+      if (!token) { log('Cancelled.'); return; }
+      try {
+        const res = await fetch(URL, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token
+          }
+        });
+        log('status: ' + res.status);
+        log(await res.text());
+      } catch (err) {
+        log('ERROR: ' + err.message);
+      }
+      log('→ "Authorization" is a non-safelisted header, so the browser ' +
+          'sent an OPTIONS preflight first. techbench.in does not answer ' +
+          'the preflight with Access-Control-Allow-Headers: authorization, ' +
+          'so the browser never sent the real GET. CORS error.');
+    });
 
-    log('');
-    log('# Body:', 'info');
-    const text = await res.text();
-    try {
-      const json = JSON.parse(text);
-      log(JSON.stringify(json, null, 2));
-    } catch {
-      log(text || '(empty body)');
-    }
-
-    statusEl.textContent = res.ok ? `Success — HTTP ${res.status}` : `Failed — HTTP ${res.status}`;
-    statusEl.className = res.ok ? 'ok' : 'err';
-
-  } catch (err) {
-    const t1 = performance.now();
-    log(`\n# Fetch threw after ${(t1 - t0).toFixed(1)} ms`, 'err');
-    log(`Name   : ${err.name}`, 'err');
-    log(`Message: ${err.message}`, 'err');
-    log('');
-    if (err instanceof TypeError) {
-      log('This is almost certainly a CORS / network failure. Common causes:', 'warn');
-      log('  • No Access-Control-Allow-Origin matching this page origin.', 'warn');
-      log('  • Allow-Origin is "*" but credentials:"include" was used.', 'warn');
-      log('  • Authorization not listed in Access-Control-Allow-Headers.', 'warn');
-      log('  • Preflight (OPTIONS) returned non-2xx.', 'warn');
-      log('  • Mixed content (page https, API http) or DNS/TLS failure.', 'warn');
-      log('Open DevTools → Network → the OPTIONS request to inspect the preflight.', 'warn');
-    }
-    statusEl.textContent = 'Error — see output';
-    statusEl.className = 'err';
-  } finally {
-    $('go').disabled = false;
-  }
-}
-
-$('go').addEventListener('click', runTest);
-</script>
+    // -------- Attempt 5: iframe the endpoint --------
+    document.getElementById('try5').addEventListener('click', () => {
+      clear();
+      log('--- Attempt 5: iframe the endpoint ---');
+      const f = document.createElement('iframe');
+      f.src = URL;
+      f.style.width = '100%';
+      f.style.height = '300px';
+      document.body.appendChild(f);
+      log('→ The iframe will load the URL, but:');
+      log('  1. Cookies: SameSite=Lax will NOT be sent from a cross-site ' +
+          'iframe. The server sees an anonymous request.');
+      log('  2. Even if the response loads, your JS CANNOT read inside ' +
+          'the iframe — cross-origin iframe DOM access is blocked by ' +
+          'the Same-Origin Policy.');
+      log('  3. If techbench.in sets X-Frame-Options: DENY (it does — ' +
+          'you showed "X-Frame-Options: SAMEORIGIN" in a prior response), ' +
+          'the iframe will be refused entirely.');
+    });
+  </script>
 </body>
 </html>

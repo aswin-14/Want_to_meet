@@ -1,32 +1,48 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><title>Login Demo</title></head>
+<head><meta charset="utf-8"><title>Verify Email Demo</title></head>
 <body>
-  <input id="email" value="prasad@techbench.in">
-  <input id="password" type="password" value="o136o5pnVJwLk4Db7ykm6T">
-  <button id="loginBtn">Log in</button>
+  <label>Token (tokenm):</label><br>
+  <input id="token" size="80"
+         value="eyJ1c2VyX2lkIjoxNjgsInB1cnBvc2UiOiJ2ZXJpZnlfZW1haWwifQ:1x4e8s:_mGQROMk_1Hpf4obBIP2rmTn7LknPDE4MVFZGWTdnJc">
+  <br><br>
+  <button id="verifyBtn">Verify Email</button>
   <pre id="out"></pre>
 
   <script>
-    document.getElementById('loginBtn').addEventListener('click', async () => {
+    document.getElementById('verifyBtn').addEventListener('click', async () => {
       const out = document.getElementById('out');
       out.textContent = 'sending...';
       try {
-        // Only safelisted headers. Content-Type: text/plain is safelisted.
-        // No Accept customization needed (browser default is */*).
-        const res = await fetch('https://techbench.in/apigateway/login/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value
-          })
-          // NOTE: no credentials:'include' the first time — that itself
-          // can force stricter CORS handling. Add it only if you truly need cookies.
+        // Read the token value from the input and URL-encode it, because
+        // Django's signing tokens contain ':' characters which must be
+        // percent-encoded inside a query string.
+        const token = encodeURIComponent(document.getElementById('token').value.trim());
+
+        const url = `https://techbench.in/apigateway/verify-email?tokenm=${token}`;
+
+        // A plain GET with default headers is a "simple" request — no
+        // preflight (OPTIONS) is sent. The browser sends GET directly.
+        // Note: no credentials:'include' here because a top-level navigation
+        // style GET with cookies cross-origin would need SameSite=None,
+        // and the cookies here are SameSite=Lax. If the endpoint is
+        // same-origin you're fine; cross-origin, cookies won't flow.
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: {
+            // Accept is safelisted, but setting it to text/html makes the
+            // request mimic what a real browser navigation would send.
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+          }
+          // No Content-Type on GET — there's no body.
+          // No custom headers — keep it "simple" so no OPTIONS preflight.
         });
 
+        // The endpoint likely returns HTML (it's a verification landing page),
+        // so read as text first, then try JSON just in case.
         const text = await res.text();
         let data; try { data = JSON.parse(text); } catch { data = text; }
+
         out.textContent = `status: ${res.status}\n\n` +
           (typeof data === 'string' ? data : JSON.stringify(data, null, 2));
       } catch (err) {
